@@ -1,37 +1,26 @@
 # macpipe
-> http://underpop.online.fr/f/ffmpeg/help/hls-2.htm.gz
-HLS (Apple HTTP Livestreaming) is MUXer for livestreaming over HTTP which splits media into
-.tmp files and creates a playlist.
+Ever tried to connect Airpods (or really any bluetooth headset) on Linux? I have, and it's a bad time. The problem is not that it does not work, it is that it (ime) only works _sometimes_.
 
+The idea for this hack:
+1. Airpods can be connected without any issues to an Apple device, e.g. iPhone.
+2. Connect _all_ audio streams on Linux box to a virtual Pipewire device.
+3. Stream the audio as an HLS stream with `ffmpeg`.
+4. Create a stub website that serves the stream and visit it from the iOS device with headset connected.
+5. Profit 🤪
+
+This solution obviously has problems, most notably the fact that all audio is delayed by 2~10 sec so videos are going to be out of sync.
+However, if you are only concerned about audio (which I am) it is actually surprisingly usable.
+
+# Dependencies
 ```bash
-# Create a HLS stream
-ffmpeg -re -sample_rate 44100  -f s16le -channels 2  -i /tmp/virtualspeaker -f hls \
-  -hls_allow_cache 0 \
-  -hls_time 2 \
-  -hls_list_size 4 \
-  -hls_delete_threshold 1 \
-  -hls_flags delete_segments \
-  -hls_start_number_source datetime \
-  -preset superfast \
-  -start_number 10 \
-  ./stream.m3u8
-
-# Host a website that embeds the stream 
-#   https://gist.github.com/CharlesHolbrow/8adfcf4915a9a6dd20b485228e16ead0
-#   https://github.com/dailymotion/hls.js
-http-server -c-1 . -p7777
-
-
-# Visit the website on iOS
-# This kiiiiiiiiiiiiiiinda works but is super delayed, maybe we can make the HLS seek
-# further ahead with a shell hack hook during playerctl command
-
-# The audio controls work but are also super delayed.
-
-#== TODO ==#
-# We would want to store audio.tmp files in RAM
-# Restart stream on playerctl or volume event if we cant get syncing
-# Force pipewire to redirect ALL audio to virtualspeaker
-
+npm i -g http-server # Or some other basic server
 ```
 
+# TODO
+* Pipewire config
+* Improve HLS stream
+
+# Related resources
+* https://gist.github.com/CharlesHolbrow/8adfcf4915a9a6dd20b485228e16ead0
+* https://github.com/dailymotion/hls.js
+* http://underpop.online.fr/f/ffmpeg/help/hls-2.htm.gz
