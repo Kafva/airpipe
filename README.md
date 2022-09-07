@@ -11,14 +11,10 @@ The idea for this hack:
 This solution obviously has problems, most notably the fact that all audio is delayed by 2~10 sec so videos are going to be out of sync.
 However, if you are only concerned about audio (which I am) it is actually surprisingly usable.
 
-# Dependencies
-```bash
-npm i -g http-server # Or some other basic server
-```
-
 # TODO
 * Pipewire config
 * Improve HLS stream
+* Make wpctl interact with dummy stream (or set it as default)
 
 # Related resources
 * https://gist.github.com/CharlesHolbrow/8adfcf4915a9a6dd20b485228e16ead0

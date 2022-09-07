@@ -5,13 +5,19 @@ PIPEWIRE_DEV=/tmp/virtualspeaker
 
 die(){ printf "$1\n" >&2 ; exit 1; }
 info(){ printf "\033[34m!>\033[0m $1\n" >&2; }
+check_dep(){ which "$1" &> /dev/null || die "Missing '$1'" ; }
 
 #==============================================================================#
+check_dep http-server
+check_dep ffmpeg
 
 case "$1" in
 start)
-  info "Starting ffmpeg..."
-  ffmpeg -re -sample_rate 44100  -f s16le -channels 2 \
+  mkdir -p $RUN_DIR
+  cp index.html $RUN_DIR
+  cd $RUN_DIR
+
+  setsid -f ffmpeg -re -sample_rate 44100  -f s16le -channels 2 \
     -i $PIPEWIRE_DEV -f hls \
     -hls_allow_cache 0 \
     -hls_time 2 \
@@ -21,12 +27,11 @@ start)
     -hls_start_number_source datetime \
     -preset superfast \
     -start_number 10 \
-    ./stream.m3u8
+    ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
+  info "Started ffmpeg"
 
-
-  info "Starting HTTP server on 0.0.0.0:$PORT..."
-  mkdir -p $RUN_DIR
-  setsid -f http-server -c-1 $RUN_DIR -p$PORT &> /dev/null # Disable caching
+  setsid -f http-server -c-1 . -p$PORT &> /dev/null # Disable caching
+  info "Started HTTP server on 0.0.0.0:$PORT..."
 ;;
 stop)
   pkill -x ffmpeg
@@ -35,5 +40,4 @@ stop)
 *)
   die "usage: $(basename $0) <start|stop>"
 ;;
-
 esac
