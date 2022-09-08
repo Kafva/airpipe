@@ -28,7 +28,7 @@ setup)
 ;;
 start)
   mkdir -p $RUN_DIR
-  cp index.html $RUN_DIR
+  cp -v index.{html,js} $RUN_DIR
   cd $RUN_DIR
 
   setsid -f ffmpeg -re -sample_rate 44100  -f s16le -channels 2 \
