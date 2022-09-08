@@ -44,7 +44,7 @@ start)
     -hls_delete_threshold 5 \
     -hls_flags delete_segments \
     -hls_start_number_source epoch \
-    -start_number 0 \
+    -start_number 45 \
     ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
   info "Started ffmpeg"
 
