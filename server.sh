@@ -31,16 +31,20 @@ start)
   cp -v index.{html,js} $RUN_DIR
   cd $RUN_DIR
 
+  # -hls_time: The duration of each segment file
+  # -hls_list_size: The number of entries to supply to the client in .m3u8
+  # -hls_delete_threshold: The number of old segment files to keep
+  # -start_number: Index in playlist to start playback from
   setsid -f ffmpeg -re -sample_rate 44100  -f s16le -channels 2 \
     -i $PIPEWIRE_DEV -f hls \
+    -preset ultrafast \
     -hls_allow_cache 0 \
-    -hls_time 2 \
-    -hls_list_size 4 \
-    -hls_delete_threshold 1 \
+    -hls_time 0.5 \
+    -hls_list_size 50 \
+    -hls_delete_threshold 5 \
     -hls_flags delete_segments \
-    -hls_start_number_source datetime \
-    -preset superfast \
-    -start_number 10 \
+    -hls_start_number_source epoch \
+    -start_number 0 \
     ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
   info "Started ffmpeg"
 
