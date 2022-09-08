@@ -12,9 +12,8 @@ This solution obviously has problems, most notably the fact that all audio is de
 However, if you are only concerned about audio (which I am) it is actually surprisingly usable.
 
 # TODO
-* Pipewire config
 * Improve HLS stream
-* Make wpctl interact with dummy stream (or set it as default)
+* Fixup html and seperate script
 
 # Related resources
 * https://gist.github.com/CharlesHolbrow/8adfcf4915a9a6dd20b485228e16ead0

@@ -2,6 +2,7 @@
 PORT=9888
 RUN_DIR=/tmp/macpipe
 PIPEWIRE_DEV=/tmp/virtualspeaker
+VIRTUAL_NAME=VirtualSpeaker
 
 die(){ printf "$1\n" >&2 ; exit 1; }
 info(){ printf "\033[34m!>\033[0m $1\n" >&2; }
@@ -12,6 +13,19 @@ check_dep http-server
 check_dep ffmpeg
 
 case "$1" in
+setup)
+  # Install virtual device configuration
+  sudo cp -v virtual.conf /etc/pipewire/pipewire.conf.d/virtual.conf
+
+  # Set the VirtualSpeaker as the default output
+  wpctl inspect @DEFAULT_AUDIO_SINK@|grep -q "node.name = \"$VIRTUAL_NAME\"" &&
+    die "Already set as default: $VIRTUAL_NAME"
+
+  SINK=$(wpctl status|sed -nE "s/[^0-9]*([0-9]+\.)\s+$VIRTUAL_NAME.*/\1/p")
+  [ -z "$SINK" ] && 
+    die "Can't find virtual sink: $VIRTUAL_NAME"
+  wpctl set-default $SINK
+;;
 start)
   mkdir -p $RUN_DIR
   cp index.html $RUN_DIR
@@ -38,6 +52,6 @@ stop)
   pkill -x http-server
 ;;
 *)
-  die "usage: $(basename $0) <start|stop>"
+  die "usage: $(basename $0) <setup|start|stop>"
 ;;
 esac
