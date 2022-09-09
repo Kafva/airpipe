@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # vi: ft=bash
 PORT=9888
+INSTALL_DIR=~/Repos/airpipe
 RUN_DIR=/tmp/airpipe
 PIPEWIRE_DEV=/tmp/virtualspeaker
 VIRTUAL_NAME=VirtualSpeaker
@@ -29,7 +30,7 @@ setup)
 ;;
 start)
   mkdir -p $RUN_DIR
-  cp -v index.{html,js} $RUN_DIR
+  cp -v $INSTALL_DIR/index.{html,js} $RUN_DIR
   cd $RUN_DIR
 
   # -hls_time: The duration of each segment file
