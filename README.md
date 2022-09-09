@@ -1,4 +1,4 @@
-# macpipe
+# airpipe
 Ever tried to connect Airpods (or really any bluetooth headset) on Linux? I have, and it's a bad time. The problem is not that it does not work, it is that it (ime) only works _sometimes_.
 
 The idea for this hack:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # vi: ft=bash
 PORT=9888
-RUN_DIR=/tmp/macpipe
+RUN_DIR=/tmp/airpipe
 PIPEWIRE_DEV=/tmp/virtualspeaker
 VIRTUAL_NAME=VirtualSpeaker
 
