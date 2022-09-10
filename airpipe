@@ -29,6 +29,9 @@ setup)
   wpctl set-default $SINK
 ;;
 start)
+  lsof -c ffmpeg|grep -q $RUN_DIR/ffmpeg.log && 
+    die "Already running"
+
   mkdir -p $RUN_DIR
   cp -v $INSTALL_DIR/index.{html,js} $RUN_DIR
   cd $RUN_DIR
