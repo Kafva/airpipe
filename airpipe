@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # vi: ft=bash
-PORT=9888
-INSTALL_DIR=~/Repos/airpipe
-RUN_DIR=/tmp/airpipe
-PIPEWIRE_DEV=/tmp/virtualspeaker
-VIRTUAL_NAME=VirtualSpeaker
+readonly PORT=9888
+readonly INSTALL_DIR=$HOME/Repos/airpipe
+readonly RUN_DIR=/tmp/airpipe
+readonly PIPEWIRE_DEV=/tmp/virtualspeaker
+readonly VIRTUAL_NAME=VirtualSpeaker
+readonly LOG_FILE=$RUN_DIR/ffmpeg.log
 
 die() { printf "$1\n" >&2 && exit 1; }
 info() { printf "\033[34m!>\033[0m $1\n" >&2; }
-check_dep() { which "$1" &> /dev/null || die "Missing '$1'"; }
+check_dep() { command -v "$1" &> /dev/null || die "Missing '$1'"; }
 
 #==============================================================================#
 check_dep http-server
@@ -29,7 +30,7 @@ setup)
     wpctl set-default $SINK
     ;;
 start)
-    lsof -c ffmpeg | grep -q $RUN_DIR/ffmpeg.log &&
+    lsof -c ffmpeg | grep -q $LOG_FILE &&
         die "Already running"
 
     mkdir -p $RUN_DIR
@@ -50,7 +51,7 @@ start)
         -hls_flags delete_segments \
         -hls_start_number_source epoch \
         -start_number 45 \
-        ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
+        ./stream.m3u8 &> $LOG_FILE
     info "Started ffmpeg"
 
     setsid -f http-server -c-1 . -p$PORT &> /dev/null # Disable caching
@@ -59,8 +60,12 @@ start)
 stop)
     pkill --signal SIGKILL -x ffmpeg
     pkill --signal SIGTERM -x http-server
+    rm -rf $RUN_DIR
+    ;;
+log)
+    tail -f $LOG_FILE
     ;;
 *)
-    die "usage: $(basename $0) <setup|start|stop>"
+    die "usage: $(basename $0) <setup|start|stop|log>"
     ;;
 esac
