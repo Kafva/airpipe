@@ -6,9 +6,9 @@ RUN_DIR=/tmp/airpipe
 PIPEWIRE_DEV=/tmp/virtualspeaker
 VIRTUAL_NAME=VirtualSpeaker
 
-die(){ printf "$1\n" >&2 ; exit 1; }
-info(){ printf "\033[34m!>\033[0m $1\n" >&2; }
-check_dep(){ which "$1" &> /dev/null || die "Missing '$1'" ; }
+die() { printf "$1\n" >&2 && exit 1; }
+info() { printf "\033[34m!>\033[0m $1\n" >&2; }
+check_dep() { which "$1" &> /dev/null || die "Missing '$1'"; }
 
 #==============================================================================#
 check_dep http-server
@@ -16,51 +16,51 @@ check_dep ffmpeg
 
 case "$1" in
 setup)
-  # Install virtual device configuration
-  sudo cp -v virtual.conf /etc/pipewire/pipewire.conf.d/virtual.conf
+    # Install virtual device configuration
+    sudo cp -v virtual.conf /etc/pipewire/pipewire.conf.d/virtual.conf
 
-  # Set the VirtualSpeaker as the default output
-  wpctl inspect @DEFAULT_AUDIO_SINK@|grep -q "node.name = \"$VIRTUAL_NAME\"" &&
-    die "Already set as default: $VIRTUAL_NAME"
+    # Set the VirtualSpeaker as the default output
+    wpctl inspect @DEFAULT_AUDIO_SINK@ | grep -q "node.name = \"$VIRTUAL_NAME\"" &&
+        die "Already set as default: $VIRTUAL_NAME"
 
-  SINK=$(wpctl status|sed -nE "s/[^0-9]*([0-9]+\.)\s+$VIRTUAL_NAME.*/\1/p")
-  [ -z "$SINK" ] && 
-    die "Can't find virtual sink: $VIRTUAL_NAME"
-  wpctl set-default $SINK
-;;
+    SINK=$(wpctl status | sed -nE "s/[^0-9]*([0-9]+\.)\s+$VIRTUAL_NAME.*/\1/p")
+    [ -z "$SINK" ] &&
+        die "Can't find virtual sink: $VIRTUAL_NAME"
+    wpctl set-default $SINK
+    ;;
 start)
-  lsof -c ffmpeg|grep -q $RUN_DIR/ffmpeg.log && 
-    die "Already running"
+    lsof -c ffmpeg | grep -q $RUN_DIR/ffmpeg.log &&
+        die "Already running"
 
-  mkdir -p $RUN_DIR
-  cp -v $INSTALL_DIR/index.{html,js} $RUN_DIR
-  cd $RUN_DIR
+    mkdir -p $RUN_DIR
+    cp -v $INSTALL_DIR/index.{html,js} $RUN_DIR
+    cd $RUN_DIR
 
-  # -hls_time: The duration of each segment file
-  # -hls_list_size: The number of entries to supply to the client in .m3u8
-  # -hls_delete_threshold: The number of old segment files to keep
-  # -start_number: Index in playlist to start playback from
-  setsid -f ffmpeg -re -sample_rate 44100  -f s16le -channels 2 \
-    -i $PIPEWIRE_DEV -f hls \
-    -preset zerolatency \
-    -hls_allow_cache 0 \
-    -hls_time 0.5 \
-    -hls_list_size 50 \
-    -hls_delete_threshold 5 \
-    -hls_flags delete_segments \
-    -hls_start_number_source epoch \
-    -start_number 45 \
-    ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
-  info "Started ffmpeg"
+    # -hls_time: The duration of each segment file
+    # -hls_list_size: The number of entries to supply to the client in .m3u8
+    # -hls_delete_threshold: The number of old segment files to keep
+    # -start_number: Index in playlist to start playback from
+    setsid -f ffmpeg -re -sample_rate 44100 -f s16le -channels 2 \
+        -i $PIPEWIRE_DEV -f hls \
+        -preset zerolatency \
+        -hls_allow_cache 0 \
+        -hls_time 0.5 \
+        -hls_list_size 50 \
+        -hls_delete_threshold 5 \
+        -hls_flags delete_segments \
+        -hls_start_number_source epoch \
+        -start_number 45 \
+        ./stream.m3u8 &> $RUN_DIR/ffmpeg.log
+    info "Started ffmpeg"
 
-  setsid -f http-server -c-1 . -p$PORT &> /dev/null # Disable caching
-  info "Started HTTP server on 0.0.0.0:$PORT..."
-;;
+    setsid -f http-server -c-1 . -p$PORT &> /dev/null # Disable caching
+    info "Started HTTP server on 0.0.0.0:$PORT..."
+    ;;
 stop)
-  pkill --signal SIGKILL -x ffmpeg
-  pkill --signal SIGTERM -x http-server
-;;
+    pkill --signal SIGKILL -x ffmpeg
+    pkill --signal SIGTERM -x http-server
+    ;;
 *)
-  die "usage: $(basename $0) <setup|start|stop>"
-;;
+    die "usage: $(basename $0) <setup|start|stop>"
+    ;;
 esac
